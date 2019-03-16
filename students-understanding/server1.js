@@ -1,17 +1,17 @@
 // Using Algorithmia
 
-const express = require("express");
-const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
-const path = require("path");
-const multer = require("multer");
-const ffmpeg = require("ffmpeg");
-const fs = require("fs-extra");
-const dotenv = require("dotenv");
-const Algorithmia = require("algorithmia");
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const path = require('path');
+const multer = require('multer');
+const ffmpeg = require('ffmpeg');
+const fs = require('fs-extra');
+const dotenv = require('dotenv');
+const Algorithmia = require('algorithmia');
 
-const getMaxConfidenceEmotion = require("./lib/getMaxConfidenceEmotion");
-const uploadImage = require("./lib/uploadImage");
+const getMaxConfidenceEmotion = require('./lib/getMaxConfidenceEmotion');
+const uploadImage = require('./lib/uploadImage');
 
 dotenv.config();
 
@@ -20,7 +20,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Imports the Google Cloud client library
-const vision = require("@google-cloud/vision");
+const vision = require('@google-cloud/vision');
 
 // Creates a client
 const client = new vision.ImageAnnotatorClient();
@@ -73,13 +73,13 @@ const client = new vision.ImageAnnotatorClient();
 //   });
 // }
 
-app.get("/", (req, res) => res.send("Working"));
+app.get('/', (req, res) => res.send('Working'));
 
 const myCallbackFunction = async () => {
   try {
-    const uploadedImageUrl = await uploadImage("./data/images/feed_1.jpg");
+    const uploadedImageUrl = await uploadImage('./data/images/feed_1.jpg');
     await console.log(uploadedImageUrl);
-    await console.log("Hellooooooooo");
+    await console.log('Hellooooooooo');
 
     const input = {
       image: uploadedImageUrl,
@@ -87,18 +87,18 @@ const myCallbackFunction = async () => {
     };
 
     await Algorithmia.client(process.env.ALGORITHMIA_API_KEY)
-      .algo("deeplearning/EmotionRecognitionCNNMBP/1.0.1?timeout=300") // timeout is optional
+      .algo('deeplearning/EmotionRecognitionCNNMBP/1.0.1?timeout=300') // timeout is optional
       .pipe(input)
       .then(function(response) {
         let sum = 0;
         response.get().results.forEach(result => {
           const emotions = {
-            Happy: 1,
+            Happy: 2,
             Angry: -1,
             Sad: -1,
             Disgust: -1,
             Surprise: -1,
-            Neutral: 0,
+            Neutral: 1,
             Fear: -1
           };
           const maxEmotion = JSON.parse(
@@ -115,31 +115,48 @@ const myCallbackFunction = async () => {
   }
 };
 
-app.get("/test", (req, res) => {
+app.get('/test', (req, res) => {
   try {
-    var process = new ffmpeg("./data/feed.mp4");
+    var process = new ffmpeg('./data/feed.mp4');
     process.then(
       video => {
         console.log(video.metadata.duration.raw);
         video.fnExtractFrameToJPG(
-          "./data/images/",
+          './data/images/',
           {
             frame_rate: 1,
             number: 4,
             keep_pixel_aspect_ratio: true,
             keep_aspect_ratio: true
           },
-          myCallbackFunction()
+          myCallbackFunction
         );
       },
       function(err) {
-        console.log("Error: " + err);
+        console.log('Error: ' + err);
       }
     );
   } catch (e) {
     console.log(e.code);
     console.log(e.msg);
   }
+});
+
+app.get('/upload', (req, res) => {
+  const cloudinary = require('cloudinary');
+
+  cloudinary.config({
+    cloud_name: 'marvellous',
+    api_key: '635633423554395',
+    api_secret: '_Zrw18PrULBIZvWcCCpF4mjujho'
+  });
+
+  cloudinary.v2.uploader.upload('./data/images/feed_1.jpg', (error, result) => {
+    console.log(result);
+    const uploadedUrl = result.url;
+    console.log(uploadedUrl);
+    // reject(error);
+  });
 });
 
 const port = process.env.PORT || 5000;
