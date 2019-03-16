@@ -1,5 +1,4 @@
-// Using Algorithmia
-
+// Using Google Cloud Vision
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
@@ -8,10 +7,6 @@ const multer = require("multer");
 const ffmpeg = require("ffmpeg");
 const fs = require("fs-extra");
 const dotenv = require("dotenv");
-const Algorithmia = require("algorithmia");
-
-const getMaxConfidenceEmotion = require("./lib/getMaxConfidenceEmotion");
-const uploadImage = require("./lib/uploadImage");
 
 dotenv.config();
 
@@ -72,58 +67,35 @@ const client = new vision.ImageAnnotatorClient();
 //     res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
 //   });
 // }
+const myCallbackFunction = () => {
+  console.log("workff");
 
-app.get("/", (req, res) => res.send("Working"));
+  // Performs label detection on the image file
+  client
+    .faceDetection("https://i.imgur.com/ZnW2QY3.jpg")
+    .then(results => {
+      const labels = results[0].faceAnnotations;
 
-const myCallbackFunction = async () => {
-  try {
-    const uploadedImageUrl = await uploadImage("./data/images/feed_1.jpg");
-    await console.log(uploadedImageUrl);
-    await console.log("Hellooooooooo");
-
-    const input = {
-      image: uploadedImageUrl,
-      numResults: 7
-    };
-
-    await Algorithmia.client(process.env.ALGORITHMIA_API_KEY)
-      .algo("deeplearning/EmotionRecognitionCNNMBP/1.0.1?timeout=300") // timeout is optional
-      .pipe(input)
-      .then(function(response) {
-        let sum = 0;
-        response.get().results.forEach(result => {
-          const emotions = {
-            Happy: 1,
-            Angry: -1,
-            Sad: -1,
-            Disgust: -1,
-            Surprise: -1,
-            Neutral: 0,
-            Fear: -1
-          };
-          const maxEmotion = JSON.parse(
-            getMaxConfidenceEmotion(result.emotions)
-          );
-          console.log(maxEmotion.label);
-          console.log(maxEmotion.confidence);
-          sum += maxEmotion.confidence * emotions[maxEmotion.label];
-        });
-        console.log(sum);
-      });
-  } catch (e) {
-    console.log(e);
-  }
+      // console.log('Labels:');
+      // labels.forEach(label => console.log(label.description));
+      // console.log(results.labelAnnotations);
+      console.log(labels);
+    })
+    .catch(err => {
+      console.error("ERROR:", err);
+    });
 };
-
+app.get("/", (req, res) => res.send("Working"));
 app.get("/test", (req, res) => {
   try {
-    var process = new ffmpeg("./data/feed.mp4");
+    var process = new ffmpeg("./data/VID_20190315_230335.mp4");
     process.then(
-      video => {
+      function(video) {
         console.log(video.metadata.duration.raw);
         video.fnExtractFrameToJPG(
           "./data/images/",
           {
+            // every_n_frames: 3,
             frame_rate: 1,
             number: 4,
             keep_pixel_aspect_ratio: true,
