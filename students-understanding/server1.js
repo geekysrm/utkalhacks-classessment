@@ -10,6 +10,8 @@ const fs = require("fs-extra");
 const dotenv = require("dotenv");
 const Algorithmia = require("algorithmia");
 
+const getMaxConfidenceEmotion = require("./lib/getMaxConfidenceEmotion");
+
 dotenv.config();
 
 const app = express();
@@ -69,23 +71,39 @@ const client = new vision.ImageAnnotatorClient();
 //     res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
 //   });
 // }
+
 const myCallbackFunction = () => {
   var input = {
-    image: "https://i.imgur.com/5FFnMF7.jpg",
+    image: "./data/feed_1.jpg",
     numResults: 7
   };
   Algorithmia.client(process.env.ALGORITHMIA_API_KEY)
     .algo("deeplearning/EmotionRecognitionCNNMBP/1.0.1?timeout=300") // timeout is optional
     .pipe(input)
     .then(function(response) {
-      console.log(response.get().results[0].emotions);
+      let sum = 0;
+      response.get().results.forEach(result => {
+        const emotions = {
+          Happy: 1,
+          Angry: -1,
+          Sad: -1,
+          Disgust: -1,
+          Surprise: -1,
+          Neutral: 0,
+          Fear: -1
+        };
+        const maxEmotion = JSON.parse(getMaxConfidenceEmotion(result.emotions));
+
+        sum += maxEmotion.confidence * emotions[maxEmotion.label];
+      });
+      console.log(sum);
     });
 };
 
 app.get("/", (req, res) => res.send("Working"));
 app.get("/test", (req, res) => {
   try {
-    var process = new ffmpeg("./data/VID_20190315_230335.mp4");
+    var process = new ffmpeg("./data/feed.mp4");
     process.then(
       function(video) {
         console.log(video.metadata.duration.raw);
