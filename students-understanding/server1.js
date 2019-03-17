@@ -6,7 +6,6 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const multer = require('multer');
 const ffmpeg = require('ffmpeg');
-const fs = require('fs-extra');
 const dotenv = require('dotenv');
 const Algorithmia = require('algorithmia');
 
@@ -117,7 +116,7 @@ const myCallbackFunction = async () => {
 
 app.get('/test', (req, res) => {
   try {
-    var process = new ffmpeg('./data/feed.mp4');
+    var process = new ffmpeg('./data/feed.flv');
     process.then(
       video => {
         console.log(video.metadata.duration.raw);
