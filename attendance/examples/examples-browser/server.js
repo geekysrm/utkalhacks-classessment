@@ -80,7 +80,7 @@ app.post('/fetch_external_image', async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log('Listening on port 3000!'));
+app.listen(7000, () => console.log('Listening on port 7000!'));
 
 function request(url, returnBuffer = true, timeout = 10000) {
   return new Promise(function(resolve, reject) {

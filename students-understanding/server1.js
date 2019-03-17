@@ -8,6 +8,7 @@ const multer = require('multer');
 const ffmpeg = require('ffmpeg');
 const dotenv = require('dotenv');
 const Algorithmia = require('algorithmia');
+const cors = require('cors');
 
 const getMaxConfidenceEmotion = require('./lib/getMaxConfidenceEmotion');
 const uploadImage = require('./lib/uploadImage');
@@ -15,8 +16,10 @@ const uploadImage = require('./lib/uploadImage');
 dotenv.config();
 
 const app = express();
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors());
 
 // Imports the Google Cloud client library
 const vision = require('@google-cloud/vision');
@@ -115,7 +118,6 @@ app.get('/upload', (req, res) => {
   });
 
   cloudinary.v2.uploader.upload('./data/images/feed_1.jpg', (error, result) => {
-    console.log(result);
     const uploadedUrl = result.url;
     console.log(uploadedUrl);
     // reject(error);

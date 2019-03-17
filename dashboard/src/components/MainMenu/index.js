@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { NavLink, Route, Redirect } from 'react-router-dom';
 
 import Dashboard from './../Dashboard';
+import Dashdoard from './../Dashdoard';
 import IssuesIndex from './../Issues';
 import Signin from './../Signin';
 import Profile from './../Profile';
@@ -90,6 +91,7 @@ class MainMenu extends Component {
             ) : null}
             {/* <Route path="/" component={Login} /> */}
             <Route path="/dashboard" component={Dashboard} />
+            <Route path="/dashdoard" component={Dashdoard} />
             <Route path="/issues" component={IssuesIndex} />
             <Route
               path="/profile"
