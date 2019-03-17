@@ -26,9 +26,46 @@ const client = new vision.ImageAnnotatorClient();
 
 app.get('/', (req, res) => res.send('Working'));
 
-// const myCallbackFunction = async (req, res) => {
+const myCallbackFunction = async (req, res) => {
+  try {
+    const uploadedImageUrl = await uploadImage('./data/images/feed_1.jpg');
+    await console.log(uploadedImageUrl);
 
-// };
+    const input = {
+      image: uploadedImageUrl,
+      numResults: 7
+    };
+
+    await Algorithmia.client(process.env.ALGORITHMIA_API_KEY)
+      .algo('deeplearning/EmotionRecognitionCNNMBP/1.0.1?timeout=300') // timeout is optional
+      .pipe(input)
+      .then(function(response) {
+        let sum = 0;
+        response.get().results.forEach(result => {
+          const emotions = {
+            Happy: 2,
+            Angry: -1,
+            Sad: -1,
+            Disgust: -1,
+            Surprise: -1,
+            Neutral: 1,
+            Fear: -1
+          };
+          const maxEmotion = JSON.parse(
+            getMaxConfidenceEmotion(result.emotions)
+          );
+          console.log(maxEmotion.label);
+          console.log(maxEmotion.confidence);
+          sum += maxEmotion.confidence * emotions[maxEmotion.label];
+        });
+        sum = sum / response.get().results.length;
+        console.log({ sum, number_of_students: response.get().results.length });
+        this.json({ sum, number_of_students: response.get().results.length });
+      });
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 app.get('/test', (req, res) => {
   try {
@@ -45,54 +82,7 @@ app.get('/test', (req, res) => {
             keep_aspect_ratio: true
           },
           // myCallbackFunction(req, res)
-          async () => {
-            try {
-              const uploadedImageUrl = await uploadImage(
-                './data/images/feed_1.jpg'
-              );
-              await console.log(uploadedImageUrl);
-
-              const input = {
-                image: uploadedImageUrl,
-                numResults: 7
-              };
-
-              await Algorithmia.client('simfkAByRL0gxBxFSdMStGpF3ae1')
-                .algo('deeplearning/EmotionRecognitionCNNMBP/1.0.1?timeout=300') // timeout is optional
-                .pipe(input)
-                .then(function(response) {
-                  let sum = 0;
-                  response.get().results.forEach(result => {
-                    const emotions = {
-                      Happy: 2,
-                      Angry: -1,
-                      Sad: -1,
-                      Disgust: -1,
-                      Surprise: -1,
-                      Neutral: 1,
-                      Fear: -1
-                    };
-                    const maxEmotion = JSON.parse(
-                      getMaxConfidenceEmotion(result.emotions)
-                    );
-                    console.log(maxEmotion.label);
-                    console.log(maxEmotion.confidence);
-                    sum += maxEmotion.confidence * emotions[maxEmotion.label];
-                  });
-                  sum = sum / response.get().results.length;
-                  console.log({
-                    sum,
-                    number_of_students: response.get().results.length
-                  });
-                  res.json({
-                    sum,
-                    number_of_students: response.get().results.length
-                  });
-                });
-            } catch (e) {
-              console.log(e);
-            }
-          }
+          myCallbackFunction.bind({ res })
         );
       },
       function(err) {
