@@ -74,7 +74,7 @@ const client = new vision.ImageAnnotatorClient();
 
 app.get('/', (req, res) => res.send('Working'));
 
-const myCallbackFunction = async () => {
+const myCallbackFunction = async (req, res) => {
   try {
     const uploadedImageUrl = await uploadImage('./data/images/feed_1.jpg');
     await console.log(uploadedImageUrl);
@@ -107,7 +107,8 @@ const myCallbackFunction = async () => {
           console.log(maxEmotion.confidence);
           sum += maxEmotion.confidence * emotions[maxEmotion.label];
         });
-        console.log(sum);
+        sum = sum / response.get().results.length;
+        res.json({ sum, number_of_students: response.get().results.length });
       });
   } catch (e) {
     console.log(e);
@@ -128,7 +129,7 @@ app.get('/test', (req, res) => {
             keep_pixel_aspect_ratio: true,
             keep_aspect_ratio: true
           },
-          myCallbackFunction
+          myCallbackFunction(req, res)
         );
       },
       function(err) {
