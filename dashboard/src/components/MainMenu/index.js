@@ -6,6 +6,7 @@ import IssuesIndex from './../Issues';
 import Signin from './../Signin';
 import Profile from './../Profile';
 import { withGithubUser, withGithubApi } from './../Github';
+import Login from '../Login';
 
 class MainMenu extends Component {
   constructor(props) {
@@ -25,8 +26,10 @@ class MainMenu extends Component {
           <div id="top-bar" className="top-bar col-xs-12 bg-dark d-md-none" />
           {this.state.showNav ? (
             <div id="nav" className="col-xs-3 bg-dark text-white py-5 k-vbox">
-              <h3 id="app-title">UserName</h3>
-              <p id="app-subtitle">Welcome</p>
+              <h3 id="app-title">Dr. Aditya Sahu</h3>
+              <br />
+              <p id="app-subtitle">Subject: MPMC</p>
+              <p id="app-subtitle">CSE 2016-20</p>
               <hr />
               <p className="h4 mt-5">Project</p>
               <ul className="nav nav-pills flex-column">
@@ -40,22 +43,21 @@ class MainMenu extends Component {
                   </NavLink>
                 </li>
                 <li className="nav-item" id="issues">
-                  <NavLink
+                  {/* <NavLink
                     to="/issues"
                     className="nav-link"
                     activeClassName="active"
                   >
                     Forum
-                  </NavLink>
-                </li>
-                <li className="nav-item" id="issues">
-                  <NavLink
-                    to="/attend"
+                  </NavLink> */}
+                  <a
+                    href="http://192.168.43.254:8000"
                     className="nav-link"
+                    target="_blank"
                     activeClassName="active"
                   >
-                    Attendance
-                  </NavLink>
+                    Forum
+                  </a>
                 </li>
               </ul>
               <p className="h4 mt-5">Account</p>
@@ -86,6 +88,7 @@ class MainMenu extends Component {
             {this.props.location.pathname === '/' ? (
               <Redirect from="/" to="dashboard" />
             ) : null}
+            {/* <Route path="/" component={Login} /> */}
             <Route path="/dashboard" component={Dashboard} />
             <Route path="/issues" component={IssuesIndex} />
             <Route
