@@ -6,11 +6,17 @@ from .models import Profile
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
-    user_type = forms.ChoiceField(label="Account type", choices=[('student', 'Student'),
-                                                           ('teacher', 'Teacher')])
+    user_type = forms.ChoiceField(label="Account type", choices=[('stu', 'Student'),
+                                                           ('tch', 'Teacher')])
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2']
+
+class ProfileRegistrationForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        exclude = ('user','image')
+        # fields = '__all__'
 
 class UserUpdateForm(forms.ModelForm):
     email = forms.EmailField()
@@ -22,4 +28,4 @@ class UserUpdateForm(forms.ModelForm):
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['image']
+        fields = ['image', 'category']

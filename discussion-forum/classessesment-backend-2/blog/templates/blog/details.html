@@ -6,19 +6,28 @@
     {% block content %}
     <h3 class="mb-0">{{ post.title }}</h3>
     </a>
-    <div class="mb-1 text-muted">Posted by {{ post.author }} on {{ post.dateposted|date:"F d, Y" }}</div>
+    <div class="mb-1 text-muted">Posted by <p style="text-transform:uppercase">{{ author }}</p> on {{ post.dateposted|date:"F d, Y" }}</div>
+    {% if post.tags %}
+    <div class="mb-1 text-muted"> Tags :
+        {% for tag in post.tags.all %}
+        <a href="{% url 'tag-view' tag %}">{{ tag }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <p class="article-content">{{ post.content }}</p>
+    <hr>
          {% if comments %}
             {% for comment in comments  %}
                 <div class="media mb-4">
                 <img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">
                 <div class="media-body">
-                    <h5 class="mt-0">{{comment.comment_author}}</h5>
+                    <h5 class="mt-0" style="text-transform:uppercase">{{comment.comment_author}}</h5>
                     {{comment.comment_date}} <br>
                     {{comment.comment_content}}
                 </div>
                 </div>
             {% endfor %}
-           <form action="{% url 'thread' post.id %}" method="post" enctype="multipart/form-data">
+            <form action="{% url 'thread' post.id %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <fieldset class="form-group">
                     <!-- <legend class="border-bottom mb-4">Log In:</legend> -->
@@ -34,7 +43,18 @@
             <div class ="alert alert-danger">
                 There are no comments in the thread yet!
             </div>
-           
+            <form action="{% url 'thread' post.id %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <fieldset class="form-group">
+                    <!-- <legend class="border-bottom mb-4">Log In:</legend> -->
+                    {{ comment_form|crispy }}
+                    <!-- <input type="text" name="comment_author" placeholder="" value="">
+                    <input type="text" name="comment_content"> -->
+                </fieldset>
+                <div class="form-group">
+                    <button class="btn btn-outline-secondary" type="submit">Add</button>
+                </div>
+            </form>
             {% endif %}
     {% endblock content %}
 
