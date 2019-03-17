@@ -24,54 +24,6 @@ const vision = require('@google-cloud/vision');
 // Creates a client
 const client = new vision.ImageAnnotatorClient();
 
-// Google Cloud config:
-
-// var vision = require('@google-cloud/vision');
-
-// var visionClient = vision({
-//   projectId: 'classessment',
-//   keyFilename: './keyfile.json'
-// });
-
-// var gcsImageUri =
-//   'https://www.abc.net.au/cm/lb/8176040/data/barack-obama-wiping-away-tears-during-farewell-speech-data.jpg';
-// var source = {
-//   gcsImageUri: gcsImageUri
-// };
-// var image = {
-//   source: source
-// };
-// var type = vision.v1.types.Feature.Type.FACE_DETECTION;
-// var featuresElement = {
-//   type: type
-// };
-// var features = [featuresElement];
-// var requestsElement = {
-//   image: image,
-//   features: features
-// };
-// var requests = [requestsElement];
-// visionClient
-//   .batchAnnotateImages({ requests: requests })
-//   .then(function(responses) {
-//     var response = responses[0];
-//     // doThingsWith(response)
-//     console.log(response);
-//   })
-//   .catch(function(err) {
-//     console.error(err);
-//   });
-
-// // Server static assets if in production
-// if (process.env.NODE_ENV === "production") {
-//   // Set static folder
-//   app.use(express.static("client/build"));
-
-//   app.get("*", (req, res) => {
-//     res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
-//   });
-// }
-
 app.get('/', (req, res) => res.send('Working'));
 
 const myCallbackFunction = async (req, res) => {
@@ -108,7 +60,8 @@ const myCallbackFunction = async (req, res) => {
           sum += maxEmotion.confidence * emotions[maxEmotion.label];
         });
         sum = sum / response.get().results.length;
-        res.json({ sum, number_of_students: response.get().results.length });
+        console.log({ sum, number_of_students: response.get().results.length });
+        // res.json({ sum, number_of_students: response.get().results.length });
       });
   } catch (e) {
     console.log(e);
@@ -129,7 +82,8 @@ app.get('/test', (req, res) => {
             keep_pixel_aspect_ratio: true,
             keep_aspect_ratio: true
           },
-          myCallbackFunction(req, res)
+          // myCallbackFunction(req, res)
+          myCallbackFunction
         );
       },
       function(err) {
