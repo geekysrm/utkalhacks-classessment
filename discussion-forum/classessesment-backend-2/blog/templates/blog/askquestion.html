@@ -1,7 +1,7 @@
 {% extends "blog/base.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-<h5></h5>
+<h2>Post a question</h2>
 <div class="container mt--8 pb-5">
     <form action="{% url 'question' %}" method="post">
         {% csrf_token %}

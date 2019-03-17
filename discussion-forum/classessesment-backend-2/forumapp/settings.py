@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['192.168.43.254']
 # Application definition
 
 INSTALLED_APPS = [
+    'taggit',
     'crispy_forms',
     'users.apps.UsersConfig',
     'blog.apps.BlogConfig',
@@ -133,7 +134,7 @@ STATIC_URL = '/static/'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-LOGIN_REDIRECT_URL = 'login'
+LOGIN_REDIRECT_URL = 'blog-home'
 
 LOGIN_URL = 'login'
 

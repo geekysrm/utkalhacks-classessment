@@ -1,17 +1,21 @@
 {% extends "blog/base.html" %}
 {% block content %}
-    {% for post in posts %}
+<h1 class="text-muted">{{ head }}</h1>
+<br>
+<hr>
+    {% for post, user in posts %}
         <article class="media content-section">
           <!-- <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}"> -->
           <div class="media-body">
             <div class="article-metadata">
-              <a class="mr-2" href="#">{{ post.author }}</a>
+              <a class="mr-2" style="text-transform:uppercase"> - By {{ user }}</a>
               <small class="text-muted">{{ post.dateposted|date:"F d, Y" }}</small>
             </div>
-            <h2><a class="article-title" href="{% url 'thread' post.id %}">{{ post.title }}</a></h2>
-            <p class="article-content">{{ post.content }}</p>
+            <h4><a class="article-title" href="{% url 'thread' post.id %}">{{ post.title }}</a></h4>
+            <p class="article-content">{{ post.content|truncatewords:80 }}...</p>
             <a class="article-title" href="{% url 'thread' post.id %}">Comment</a>
           </div>
         </article>
+        <hr>
     {% endfor %}
 {% endblock content %}

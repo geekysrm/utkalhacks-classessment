@@ -1,71 +1,3 @@
-# from django.shortcuts import render
-# from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-# from django.views.generic import (
-#     ListView,
-#     DetailView,
-#     CreateView,
-#     UpdateView,
-#     DeleteView
-# )
-# from .models import Post
-
-
-# def home(request):
-#     context = {
-#         'posts': Post.objects.all()
-#     }
-#     return render(request, 'blog/home.html', context)
-
-
-# class PostListView(ListView):
-#     model = Post
-#     template_name = 'blog/home.html'  # <app>/<model>_<viewtype>.html
-#     context_object_name = 'posts'
-#     ordering = ['-date_posted']
-
-
-# class PostDetailView(DetailView):
-#     model = Post
-
-
-# class PostCreateView(LoginRequiredMixin, CreateView):
-#     model = Post
-#     fields = ['title', 'content']
-
-#     def form_valid(self, form):
-#         form.instance.author = self.request.user
-#         return super().form_valid(form)
-
-
-# class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-#     model = Post
-#     fields = ['title', 'content']
-
-#     def form_valid(self, form):
-#         form.instance.author = self.request.user
-#         return super().form_valid(form)
-
-#     def test_func(self):
-#         post = self.get_object()
-#         if self.request.user == post.author:
-#             return True
-#         return False
-
-
-# class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-#     model = Post
-#     success_url = '/'
-
-#     def test_func(self):
-#         post = self.get_object()
-#         if self.request.user == post.author:
-#             return True
-#         return False
-
-
-# def about(request):
-#     return render(request, 'blog/about.html', {'title': 'About'})
-
 from django.shortcuts import render,HttpResponse,redirect,get_object_or_404,reverse
 from django.http.response import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -73,23 +5,64 @@ from .models import Post, Comment
 from django.contrib.auth.decorators import login_required
 from .forms import QuestionForm, CommentForm
 import hashlib
+import paralleldots
+from django.contrib import messages
+
+def check_profanity(str):
+    API_KEY = 'CXzdEjT6iFqefK5cLrK8lmdFqQ6F4WNiSrnequ5GXzs'
+    paralleldots.set_api_key(API_KEY)
+    
+    response=paralleldots.abuse(str)
+    
+    if response['sentence_type'] == 'Abusive' and response['confidence_score'] >= 0.35:
+        return True
+    else:
+        return False
+
+
 
 def encrypt_string(hash_string):
     sha_signature = \
         hashlib.sha256(hash_string.encode()).hexdigest()
     return sha_signature
-# hash_string = 'confidential data'
-# sha_signature = encrypt_string(hash_string)
-# print(sha_signature)
-# 3fef7ff0fc1660c6bd319b3a8109fcb9f81985eabcbbf8958869ef03d605a9eb
+
+
 
 # Create your views here.
 @login_required
 def home(request):
     # return HttpResponse('<h1>Blog - Home</h1>')
+    posts = Post.objects.all()
+    hash_user = []
+    for post in posts:
+        # if post.author.profile.category != 'tch':
+        if post.anonymous == True:
+            hash_user.append(encrypt_string(post.author.username)[:15])
+        else:
+            hash_user.append(post.author.username)
+    
     context = {
-        'posts':Post.objects.all(),
-        'name':'Home Page'
+        'posts':zip(posts, hash_user),
+        'name':'Home Page',
+        'head':'Home page'
+    }
+    return render(request, 'blog/home.html', context=context)
+
+@login_required
+def tagview(request, string):
+    posts = Post.objects.filter(tags__name__in=[string])
+    hash_user = []
+    for post in posts:
+        # if post.author.profile.category != 'tch' and post.anonymous == True:
+        if post.anonymous == True:
+            hash_user.append(encrypt_string(post.author.username)[:15])
+        else:
+            hash_user.append(post.author.username)
+
+    context = {
+        'posts':zip(posts, hash_user),
+        'name':'Home Page' + string,
+        'head':'Questions tagged ' + string
     }
     return render(request, 'blog/home.html', context=context)
 
@@ -100,29 +73,40 @@ def thread(request, id):
         form = CommentForm(request.POST)
 
         if form.is_valid():
+            profanity = check_profanity(form.cleaned_data['comment_content'])
+            if profanity:
+                messages.warning(request, 'Your comment is abusive. Redirecting you to Home Page')
+                return redirect('blog-home')
             post = get_object_or_404(Post,id = id)
             # comment = Comment(article=post, comment_author=form.cleaned_data['comment_author'], comment_content=form.cleaned_data['comment_content'])
             # comment.objects.create()
             model_object = form.save(commit=False)
             model_object.article = post
             model_object.comment_author = request.user.username
-            if model_object.anonymous:
-                model_object.comment_author = encrypt_string(request.user.username)[:15]
+            if request.user.profile.category != 'tch':
+                if model_object.anonymous:
+                    if model_object.comment_author:
+                        model_object.comment_author =  encrypt_string(request.user.username)[:15]
             # form.save()
             model_object.save()
-            redirect('blog-home')
+            return redirect('blog-home')
     
     post = get_object_or_404(Post,id = id)
+    author = post.author.username
+    # if post.author.profile.category != 'tch':
+    if post.anonymous == True:
+        author = encrypt_string(post.author.username)[:15]
     comments = post.comment_set.all()
     comment_form = CommentForm()
 
     ctx = {
         'post': post,
+        'author':author,
         'comment_form' : comment_form,
         'comments': comments
     }
 
-    return render(request, 'blog/details.html', {'post': post,'comments': comments, 'comment_form':comment_form})
+    return render(request, 'blog/details.html', ctx)
 
 
 
@@ -139,11 +123,28 @@ def about(request):
 def askquestion(request):
     print(request.method)   
     if request.method == 'POST':
-        print('asdasjdakjsdkasbdkjbkajsbdkajbsd')        
+        # print('asdasjdakjsdkasbdkjbkajsbdkajbsd')        
         form = QuestionForm(request.POST)
-        print('in oiasdjasdbk')
+        # print('in oiasdjasdbk')
         if form.is_valid():
-            form.save()
+            profanity1 = check_profanity(form.cleaned_data['content'])
+            profanity2 = check_profanity(form.cleaned_data['title'])
+            if profanity1 or profanity2:
+                messages.warning(request, 'Your content is abusive. Redirecting you to Home Page')
+                return redirect('blog-home')
+            model_object = form.save(commit=False)
+            # model_object.article = post
+            # print(model_object.tags)
+            model_object.author = request.user
+            # model_object.tags = form.cleaned_data['tags']
+            # print(set(form.cleaned_data['tags']))
+            # if model_object.anonymous:
+            #     if model_object.comment_author:
+            #         model_object.comment_author =  encrypt_string(request.user.username)[:15]
+            # form.save()
+            model_object.save()
+            form.save_m2m()
+            # form.save()
             return redirect('blog-home')
     else:
         q_form = QuestionForm()

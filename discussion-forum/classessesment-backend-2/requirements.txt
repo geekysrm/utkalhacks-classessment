@@ -11,6 +11,7 @@ django-bootstrap==0.2.4
 django-celery==3.2.2
 django-cors-headers==2.5.2
 django-crispy-forms==1.7.2
+django-taggit==0.24.0
 djangorestframework==3.9.2
 djongo==1.2.31
 google-api-python-client==1.7.8
@@ -21,6 +22,7 @@ httplib2==0.12.1
 idna==2.8
 kombu==3.0.37
 oauthlib==3.0.1
+ParallelDots==3.2.11
 Pillow==5.4.1
 pyasn1==0.4.5
 pyasn1-modules==0.2.4

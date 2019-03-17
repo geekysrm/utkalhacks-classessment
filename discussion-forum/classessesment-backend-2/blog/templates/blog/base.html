@@ -47,7 +47,7 @@
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                 <ul class="navbar-nav ml-auto">
                 {% if user.is_authenticated %}
-                <a class="nav-item nav-link" href="{% url 'question' %}">Ask Question</a>
+                <a class="nav-item nav-link" href="{% url 'question' %}">Post Question</a>
                 <a class="nav-item nav-link" href="{% url 'user-profile' %}">Profile</a>
                 <a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a>
                 {% else %}
@@ -65,7 +65,7 @@
         <br>
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
+                <div class="alert alert-{{message.tags}}">
                     {{ message }}
                 </div>
             {% endfor %}

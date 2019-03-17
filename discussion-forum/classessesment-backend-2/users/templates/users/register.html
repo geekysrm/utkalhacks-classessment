@@ -3,11 +3,12 @@
 {% block content %}
 <h5 class="card-title text-center">Register</h5>
     <div class="container mt--8 pb-5">
-        <form action="{% url 'register' %}" method="post">
+        <form action="{% url 'user-register' %}" method="post">
             {% csrf_token %}
             <fieldset class="form-group">
                 <!-- <legend class="border-bottom mb-4">Register:</legend> -->
-                {{ form|crispy }}
+                {{ form1|crispy }}
+                {{ form2|crispy }}
             </fieldset>
             <div class="form-group">
                 <button class="btn btn-outline-secondary" type="submit">Register</button>
